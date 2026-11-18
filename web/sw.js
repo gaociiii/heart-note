@@ -3,7 +3,8 @@ const SNAPSHOT = '/__heart_notes_offline__';
 const APP_PATHS = new Set(['/', '/index.html']);
 const APP_ASSETS = new Set([
   '/style.css', '/refinement.css', '/host.css', '/seed.js', '/data.js',
-  '/avatars.js', '/host-ui.js', '/app.js', '/icon.svg', '/pwa.js'
+  '/avatars.js', '/host-ui.js', '/app.js', '/icon.svg', '/pwa.js',
+  ...Array.from({length: 10}, (_, index) => '/avatar-a' + (index + 1) + '.png')
 ]);
 
 let pending = Promise.resolve();
@@ -30,7 +31,17 @@ async function prepareOffline() {
       .map(async ([path, pendingResponse]) => {
         const response = await pendingResponse;
         if (!response.ok) throw new Error('Offline resource unavailable: ' + path);
-        return [path, {body: await response.text(), headers: [...response.headers]}];
+        const binary = response.headers.get('Content-Type')?.startsWith('image/png');
+        let body;
+        if (binary) {
+          const bytes = new Uint8Array(await response.arrayBuffer());
+          let encoded = '';
+          for (const byte of bytes) encoded += String.fromCharCode(byte);
+          body = btoa(encoded);
+        } else {
+          body = await response.text();
+        }
+        return [path, {body, binary, headers: [...response.headers]}];
       })
   );
   // Store a complete snapshot at once so a failed refresh leaves the previous copy intact.
@@ -63,11 +74,14 @@ async function offlineAsset(path, navigation) {
   if (snapshot?.expires > Date.now() / 1000) {
     const entry = snapshot.assets[APP_PATHS.has(path) ? '/' : path];
     if (entry) {
-      // The saved body is decoded text; transport headers no longer describe it.
+      // Snapshot bodies are reconstructed locally; remove stale transport headers.
       const headers = new Headers(entry.headers);
       headers.delete('Content-Length');
       headers.delete('Content-Encoding');
-      return new Response(entry.body, {headers});
+      const body = entry.binary
+        ? Uint8Array.from(atob(entry.body), character => character.charCodeAt(0))
+        : entry.body;
+      return new Response(body, {headers});
     }
   }
   return navigation
