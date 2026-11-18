@@ -1,0 +1,16 @@
+# 心动纸条
+
+适配手机的真心话大冒险主持助手。题库、收藏、玩家及游戏进度存储于当前浏览器，不使用数据库、不跨设备同步。
+
+- `web/`：页面、题库及浏览器端逻辑。
+- `server/worker.mjs`：账号密码验证、签名登录会话及受保护的页面资源。
+- `scripts/build.mjs`：把页面资源嵌入 Worker，生成 `dist/server/index.js`。
+- `tests/`：题库迁移、导入导出及身份验证测试。
+
+构建：`npm run build`。验证：`npm test`。
+
+部署时设置服务端环境变量 `HOST_USERNAME`、`HOST_PASSWORD_SALT`、`HOST_PASSWORD_HASH`、`SESSION_SECRET`。密码使用 PBKDF2-SHA256（100000 次、32 字节输出、16 字节随机盐），会话为 7 天 HttpOnly / Secure / SameSite=Strict Cookie。凭据不存入源码或前端资源。当前为固定主持人账号，不开放注册。
+
+题库支持 JSON 与 UTF-8 CSV 导入导出。CSV 列：题库、题目、题型、氛围强度、参与方式、收藏；JSON 还保留题库图标和编号。全量导出不受页面筛选影响。支持旧版完整 JSON 备份迁移；旧标签映射：轻松→L1、微甜→L2、走心→L3、刺激→L4；双人迁移为多人。
+
+发布为自有账号密码登录时，平台入口需允许匿名访问到应用登录页，实际页面与题库资源由 Worker 会话校验保护。
