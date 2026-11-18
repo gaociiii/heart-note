@@ -1,5 +1,10 @@
 (function(root){
   const LEVELS=['L1','L2','L3','L4'];
+  const ZODIACS=['白羊座','金牛座','双子座','巨蟹座','狮子座','处女座','天秤座','天蝎座','射手座','摩羯座','水瓶座','双鱼座'];
+  const MBTIS=['INTJ','INTP','ENTJ','ENTP','INFJ','INFP','ENFJ','ENFP','ISTJ','ISFJ','ESTJ','ESFJ','ISTP','ISFP','ESTP','ESFP'];
+  const defaultAppearance=()=>({theme:'rose',fontSize:'default',font:'serif',corners:'default'});
+  function normalizeAppearance(value){const a=value||{};return {theme:['rose','lavender','sage','peach'].includes(a.theme)?a.theme:'rose',fontSize:['default','22','26','30'].includes(String(a.fontSize))?String(a.fontSize):'default',font:['serif','sans'].includes(a.font)?a.font:'serif',corners:['default','soft','neat'].includes(a.corners)?a.corners:'default'};}
+  function normalizeProfile(value){const p=value||{},text=(s,n)=>typeof s==='string'?s.trim().slice(0,n):'';const age=Number(p.age);return {nickname:text(p.nickname,12)||'xiaoxin',age:p.age!==''&&Number.isInteger(age)&&age>=1&&age<=120?age:'',zodiac:ZODIACS.includes(p.zodiac)?p.zodiac:'',mbti:MBTIS.includes(String(p.mbti).toUpperCase())?String(p.mbti).toUpperCase():'',intro:text(p.intro,300),avatar:/^a(?:[1-9]|10)$/.test(p.avatar)?p.avatar:'a1'};}
   const legacyLevels={'轻松':'L1','微甜':'L2','走心':'L3','刺激':'L4'};
   const level=v=>LEVELS.includes(String(v).toUpperCase())?String(v).toUpperCase():legacyLevels[v]||null;
   const people=v=>v==='single'||v===1||v==='单人'?'single':v==='multi'||v===2||v==='多人'||v==='双人'?'multi':null;
@@ -12,7 +17,9 @@
     d.questions=d.questions.map(q=>normalizeQuestion(q,{migrateSeed:true}));
     d.current=d.current?d.questions.find(q=>q.id===d.current.id)||null:null;
     d.participants=Array.isArray(d.participants)?d.participants.filter(id=>d.players.some(p=>p.id===id)):[];
-    d.multiCount=Number.isInteger(d.multiCount)&&d.multiCount>=2?d.multiCount:2;
+    delete d.multiCount;
+    d.appearance=normalizeAppearance(d.appearance);
+    d.profile=normalizeProfile(d.profile);
     return d;
   }
   const str=(v,max)=>typeof v==='string'&&v.trim().length>0&&v.length<=max;
@@ -69,7 +76,7 @@
   }
   function restoreBackup(data,base){
     const lib=validateLibrary(data);if(!Array.isArray(data.players)||data.players.length>200||!data.players.every(p=>str(p.id,100)&&str(p.name,12))||new Set(data.players.map(p=>p.id)).size!==data.players.length)throw Error('玩家名单格式有误');
-    const qids=new Set(lib.questions.map(q=>q.id));const d=normalizeState({...base,...lib,players:data.players.map(p=>({id:p.id,name:p.name})),seen:Array.isArray(data.seen)?data.seen.filter(id=>qids.has(id)):[],round:Number.isSafeInteger(data.round)&&data.round>=0?data.round:0,preview:typeof data.preview==='boolean'?data.preview:true,unique:typeof data.unique==='boolean'?data.unique:true,type:['mix','truth','dare'].includes(data.type)?data.type:'mix',selected:data.selected==='random'||data.selected==='favorites'||lib.categories.some(c=>c.id===data.selected)?data.selected:'random',randomCats:Array.isArray(data.randomCats)?data.randomCats.filter(id=>lib.categories.some(c=>c.id===id)):lib.categories.map(c=>c.id),participants:data.participants,multiCount:data.multiCount,current:data.current&&qids.has(data.current.id)?lib.questions.find(q=>q.id===data.current.id):null},base);return d;
+    const qids=new Set(lib.questions.map(q=>q.id));const d=normalizeState({...base,...lib,players:data.players.map(p=>({id:p.id,name:p.name})),seen:Array.isArray(data.seen)?data.seen.filter(id=>qids.has(id)):[],round:Number.isSafeInteger(data.round)&&data.round>=0?data.round:0,preview:typeof data.preview==='boolean'?data.preview:true,unique:typeof data.unique==='boolean'?data.unique:true,type:['mix','truth','dare'].includes(data.type)?data.type:'mix',selected:data.selected==='random'||data.selected==='favorites'||lib.categories.some(c=>c.id===data.selected)?data.selected:'random',randomCats:Array.isArray(data.randomCats)?data.randomCats.filter(id=>lib.categories.some(c=>c.id===id)):lib.categories.map(c=>c.id),participants:data.participants,profile:data.profile,appearance:data.appearance,current:data.current&&qids.has(data.current.id)?lib.questions.find(q=>q.id===data.current.id):null},base);return d;
   }
-  root.HeartData={LEVELS,level,people,normalizeQuestion,normalizeState,validateLibrary,libraryPayload,parseJson,exportCsv,parseCsvRows,parseCsv,mergeLibrary,restoreBackup};
+  root.HeartData={LEVELS,ZODIACS,MBTIS,defaultAppearance,normalizeAppearance,normalizeProfile,level,people,normalizeQuestion,normalizeState,validateLibrary,libraryPayload,parseJson,exportCsv,parseCsvRows,parseCsv,mergeLibrary,restoreBackup};
 })(globalThis);
