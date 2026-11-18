@@ -20,12 +20,16 @@
     delete d.multiCount;
     d.appearance=normalizeAppearance(d.appearance);
     d.profile=normalizeProfile(d.profile);
+    d.levels=normalizeLevels(d.levels);
     return d;
   }
   const str=(v,max)=>typeof v==='string'&&v.trim().length>0&&v.length<=max;
+  function normalizeLevels(value){const selected=Array.isArray(value)?LEVELS.filter(v=>value.includes(v)):[];return selected.length?selected:[...LEVELS];}
+  function availableQuestions(state){const levels=normalizeLevels(state.levels);return state.questions.filter(q=>(state.selected==='favorites'?state.favorites.includes(q.id):state.selected==='random'||q.category===state.selected)&&(state.type==='mix'||q.type===state.type)&&levels.includes(q.level)&&(!state.unique||!state.seen.includes(q.id)));}
   function validateLibrary(data){
     if(!data||!Array.isArray(data.categories)||!data.categories.length||data.categories.length>200||!Array.isArray(data.questions)||data.questions.length>20000)throw Error('题库结构不完整');
-    const categories=data.categories.map(c=>({id:c.id,name:c.name,symbol:c.symbol||'✿'}));
+    const oldNames={flirt:'暧昧库',know:'了解库',fun:'抽象库',deep:'深度库'};
+    const categories=data.categories.map(c=>({id:c.id,name:oldNames[c.id]===c.name?c.name.slice(0,-1):c.name,symbol:c.symbol||'✿'}));
     if(!categories.every(c=>str(c.id,100)&&str(c.name,12)&&str(c.symbol,10))||new Set(categories.map(c=>c.id)).size!==categories.length)throw Error('题库名称或编号有误');
     const ids=new Set(categories.map(c=>c.id));
     const questions=data.questions.map(q=>normalizeQuestion(q));
@@ -76,7 +80,7 @@
   }
   function restoreBackup(data,base){
     const lib=validateLibrary(data);if(!Array.isArray(data.players)||data.players.length>200||!data.players.every(p=>str(p.id,100)&&str(p.name,12))||new Set(data.players.map(p=>p.id)).size!==data.players.length)throw Error('玩家名单格式有误');
-    const qids=new Set(lib.questions.map(q=>q.id));const d=normalizeState({...base,...lib,players:data.players.map(p=>({id:p.id,name:p.name})),seen:Array.isArray(data.seen)?data.seen.filter(id=>qids.has(id)):[],round:Number.isSafeInteger(data.round)&&data.round>=0?data.round:0,preview:typeof data.preview==='boolean'?data.preview:true,unique:typeof data.unique==='boolean'?data.unique:true,type:['mix','truth','dare'].includes(data.type)?data.type:'mix',selected:data.selected==='random'||data.selected==='favorites'||lib.categories.some(c=>c.id===data.selected)?data.selected:'random',randomCats:Array.isArray(data.randomCats)?data.randomCats.filter(id=>lib.categories.some(c=>c.id===id)):lib.categories.map(c=>c.id),participants:data.participants,profile:data.profile,appearance:data.appearance,current:data.current&&qids.has(data.current.id)?lib.questions.find(q=>q.id===data.current.id):null},base);return d;
+    const qids=new Set(lib.questions.map(q=>q.id));const d=normalizeState({...base,...lib,players:data.players.map(p=>({id:p.id,name:p.name})),seen:Array.isArray(data.seen)?data.seen.filter(id=>qids.has(id)):[],round:Number.isSafeInteger(data.round)&&data.round>=0?data.round:0,preview:typeof data.preview==='boolean'?data.preview:true,unique:typeof data.unique==='boolean'?data.unique:true,type:['mix','truth','dare'].includes(data.type)?data.type:'mix',selected:data.selected==='random'||data.selected==='favorites'||lib.categories.some(c=>c.id===data.selected)?data.selected:'random',randomCats:Array.isArray(data.randomCats)?data.randomCats.filter(id=>lib.categories.some(c=>c.id===id)):lib.categories.map(c=>c.id),participants:data.participants,levels:data.levels,profile:data.profile,appearance:data.appearance,current:data.current&&qids.has(data.current.id)?lib.questions.find(q=>q.id===data.current.id):null},base);return d;
   }
-  root.HeartData={LEVELS,ZODIACS,MBTIS,defaultAppearance,normalizeAppearance,normalizeProfile,level,people,normalizeQuestion,normalizeState,validateLibrary,libraryPayload,parseJson,exportCsv,parseCsvRows,parseCsv,mergeLibrary,restoreBackup};
+  root.HeartData={LEVELS,normalizeLevels,availableQuestions,ZODIACS,MBTIS,defaultAppearance,normalizeAppearance,normalizeProfile,level,people,normalizeQuestion,normalizeState,validateLibrary,libraryPayload,parseJson,exportCsv,parseCsvRows,parseCsv,mergeLibrary,restoreBackup};
 })(globalThis);
