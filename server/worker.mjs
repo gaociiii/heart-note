@@ -15,10 +15,11 @@ async function hmacKey(secret){return crypto.subtle.importKey('raw',encoder.enco
 async function signSession(env){const payload=btoa(JSON.stringify({u:env.HOST_USERNAME,exp:Math.floor(Date.now()/1000)+TTL,nonce:crypto.randomUUID()})).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');const signature=await crypto.subtle.sign('HMAC',await hmacKey(env.SESSION_SECRET),encoder.encode(payload));return payload+'.'+hex(signature);}
 async function authenticated(request,env){
   if(!configured(env))return false;const token=request.headers.get('Cookie')?.split(';').map(x=>x.trim()).find(x=>x.startsWith('heart_session='))?.slice(14);if(!token||token.length>1024)return false;
-  try{const [payload,signature,...extra]=token.split('.');if(extra.length||!signature||!/^[a-f0-9]{64}$/.test(signature))return false;if(!await crypto.subtle.verify('HMAC',await hmacKey(env.SESSION_SECRET),bytesHex(signature),encoder.encode(payload)))return false;const data=JSON.parse(atob(payload.replace(/-/g,'+').replace(/_/g,'/')));const now=Math.floor(Date.now()/1000);return data.u===env.HOST_USERNAME&&Number.isSafeInteger(data.exp)&&data.exp>now&&data.exp<=now+TTL;}catch{return false;}
+  try{const [payload,signature,...extra]=token.split('.');if(extra.length||!signature||!/^[a-f0-9]{64}$/.test(signature))return false;if(!await crypto.subtle.verify('HMAC',await hmacKey(env.SESSION_SECRET),bytesHex(signature),encoder.encode(payload)))return false;const data=JSON.parse(atob(payload.replace(/-/g,'+').replace(/_/g,'/')));const now=Math.floor(Date.now()/1000);return data.u===env.HOST_USERNAME&&Number.isSafeInteger(data.exp)&&data.exp>now&&data.exp<=now+TTL?data.exp:false;}catch{return false;}
 }
 async function passwordMatches(password,env){const key=await crypto.subtle.importKey('raw',encoder.encode(password),'PBKDF2',false,['deriveBits']);const hash=await crypto.subtle.deriveBits({name:'PBKDF2',hash:'SHA-256',salt:bytesHex(env.HOST_PASSWORD_SALT),iterations:100000},key,256);return equal(new Uint8Array(hash),bytesHex(env.HOST_PASSWORD_HASH));}
-function asset(path){const entry=ASSETS[path];return entry?response(entry.content,200,{'Content-Type':entry.type}):response('Not found',404);}
+const publicAssets=new Set(['/icon.svg','/icon-192.png','/icon-512.png','/icon-maskable.png','/apple-touch-icon.png','/manifest.webmanifest','/login.js','/pwa.js','/sw.js']);
+function asset(path,headers={}){const entry=ASSETS[path];return entry?response(entry.binary?Uint8Array.from(atob(entry.content),character=>character.charCodeAt(0)):entry.content,200,{'Content-Type':entry.type,...headers}):response('Not found',404);}
 export default {async fetch(request,env){
   const url=new URL(request.url),path=url.pathname;
   if(path==='/auth/login'||path==='/auth/logout'){
@@ -37,11 +38,13 @@ export default {async fetch(request,env){
     failures.delete(ip);return json({ok:true},200,{'Set-Cookie':cookie(await signSession(env))});
   }
   if(!['GET','HEAD'].includes(request.method))return response('Method not allowed',405);
-  if(['/icon.svg','/manifest.webmanifest','/login.js'].includes(path))return asset(path);
+  if(publicAssets.has(path)){const result=asset(path);return request.method==='HEAD'?new Response(null,{status:result.status,headers:result.headers}):result;}
   const signedIn=await authenticated(request,env);
   if(path==='/login')return signedIn?redirect('/'):asset('/login.html');
   if(path==='/auth/session')return signedIn?json({username:env.HOST_USERNAME}):json({error:'Unauthorized'},401);
   if(!signedIn)return path==='/'||path==='/index.html'?redirect('/login'):json({error:'Unauthorized'},401);
   if(path==='/login.html')return redirect('/');
-  const result=asset(path==='/'?'/index.html':path);return request.method==='HEAD'?new Response(null,{status:result.status,headers:result.headers}):result;
+  const isApp=path==='/'||path==='/index.html';
+  const result=asset(isApp?'/index.html':path,isApp?{'X-Heart-Session-Expires':String(signedIn)}:{});
+  return request.method==='HEAD'?new Response(null,{status:result.status,headers:result.headers}):result;
 }};
