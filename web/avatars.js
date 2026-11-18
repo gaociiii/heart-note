@@ -8,34 +8,68 @@
     {id:'a5',name:'软糖卷发',description:'短卷发 · 灵动甜美',bg:'#f3e8d9',hair:'#a17d5f',shirt:'#bba17e',style:'curly',accessory:'freckles'},
     {id:'a6',name:'晴日马尾',description:'高马尾 · 元气清爽',bg:'#e1ece6',hair:'#65504b',shirt:'#9db5a4',style:'pony',accessory:'bow'},
     {id:'a7',name:'书页眼镜',description:'长直发 · 文艺温柔',bg:'#ece5df',hair:'#655654',shirt:'#ac9e91',style:'straight',accessory:'glasses'},
-    {id:'a8',name:'薄雾银发',description:'短银发 · 利落酷帅',bg:'#e1e7ed',hair:'#a0a6b8',shirt:'#7e8ba5',style:'swept',accessory:'hoop'},
+    {id:'a8',name:'薄雾银发',description:'短银发 · 利落酷帅',bg:'#e1e7ed',hair:'#8c8179',shirt:'#7e8ba5',style:'swept',accessory:'hoop'},
     {id:'a9',name:'樱桃双辫',description:'双辫子 · 甜美可爱',bg:'#f3dfe2',hair:'#79544d',shirt:'#c58d9b',style:'braids',accessory:'cherry'},
     {id:'a10',name:'慵懒狼尾',description:'中短发 · 随性酷帅',bg:'#e5e2ed',hair:'#5a5263',shirt:'#93839e',style:'shag',accessory:'stud'}
   ];
-  function svg(id){const p=portraits.find(a=>a.id===id)||portraits[0];let back='',front='';
-    switch(p.style){
-      case 'long':back='<path d="M30 62C23 9 101 7 98 61L105 116H23z"/>';front='<path d="M33 58c-9-42 61-48 61-3-21-2-31-15-35-24-2 15-12 24-26 27z"/>';break;
-      case 'pixie':back='<path d="M33 65c-8-17-4-38 14-46 26-13 54 5 49 35l-9 21-9-33-36 23z"/>';front='<path d="M31 53c-4-31 36-49 59-23 4 5 6 12 5 18-7-3-14-9-18-15-7 18-29 23-46 20z"/>';break;
-      case 'buns':back='<circle cx="32" cy="34" r="15"/><circle cx="95" cy="34" r="15"/><path d="M33 64c-9-54 71-54 62 0l-10 14H42z"/>';front='<path d="M34 54c-3-39 59-45 61 0-12-1-24-12-29-20-8 11-17 19-32 20z"/>';break;
-      case 'bob':back='<path d="M30 54c0-46 69-46 69 0l-1 31c-18 16-51 15-69-1z"/>';front='<path d="M32 51c3-38 61-40 64 0H82l-3-12-3 12H60l-3-11-2 11z"/>';break;
-      case 'curly':back='<path d="M29 50c-16-12-1-30 10-26 0-16 23-19 29-11 15-10 31 1 30 14 17 1 18 22 8 29 13 19-5 35-17 28H37c-19 11-29-15-17-24-7-4-5-10 9-10z"/>';front='<path d="M32 48c-12-15 9-26 18-18 5-16 24-14 29-3 16-6 28 9 17 23-12 3-20-5-23-12-8 16-26 17-41 10z"/>';break;
-      case 'pony':back='<path d="M80 29c12-27 33-15 29 4-4 17-7 34 6 46-29 6-32-23-26-38z"/><path d="M31 61C22 7 101 5 97 59L86 79H41z"/>';front='<path d="M32 52C22 15 89 4 96 51c-20-1-31-16-33-24-5 14-16 22-31 25z"/>';break;
-      case 'straight':back='<path d="M29 54c0-49 72-49 71 1v60H26z"/>';front='<path d="M31 52c-2-41 63-45 66 0-17-5-25-17-29-28-8 16-20 26-37 28z"/>';break;
-      case 'swept':back='<path d="M32 62c-13-26 6-50 32-48 25-2 43 21 32 47l-13 16H44z"/>';front='<path d="M29 48C25 9 84 4 99 39c-10-3-18-5-25-4-11 14-28 20-45 13z"/>';break;
-      case 'braids':back='<path d="M32 62c-8-53 71-54 65 0L86 81H43z"/><path d="M32 58c-11 5-10 14-4 19-11 8-8 16-1 19-8 8-5 14 2 18l11-1c6-9 1-15-1-20 8-7 5-15 0-19 4-8 2-13-7-16zM95 58c11 5 10 14 4 19 11 8 8 16 1 19 8 8 5 14-2 18l-11-1c-6-9-1-15 1-20-8-7-5-15 0-19-4-8-2-13 7-16z"/>';front='<path d="M33 51c-5-40 63-43 62 0-15-1-24-12-30-22-6 13-16 20-32 22z"/>';break;
-      case 'shag':back='<path d="M31 47c-2-42 67-42 67 0l-2 19 11 25-21-6-1 15-21-8-20 8-2-16-20 8 11-27z"/>';front='<path d="M29 48c-5-34 49-46 65-20l8 19-19-7-5 13-12-20-8 20-12-11-12 15z"/>';break;
-    }
-    const smile=['pixie','swept','shag'].includes(p.style)?'<path d="M59 76h10"/>':'<path d="M58 74q6 7 12 0"/>';
+
+  function svg(id){
+    const p=portraits.find(a=>a.id===id)||portraits[0];
+    const hair=p.hair,ink='#69504b',skin='#f8dfca';
+    const backs={
+      long:'M28 60C14 12 57 3 78 16c30 4 29 37 26 58l6 43H20z',
+      pixie:'M27 65C9 44 24 13 49 13c26-13 59 8 57 35l-9 28-10-25-44 28z',
+      buns:'M33 40C12 45 7 16 26 12c16-7 28 7 24 18M80 29c-2-20 23-24 31-8 7 17-9 26-23 20M26 63C14 5 111 4 103 63l-11 24H37z',
+      bob:'M24 51C21 1 106 1 105 52l1 39c-20 14-63 15-83-1z',
+      curly:'M22 47C7 35 20 18 34 23c-1-19 20-22 31-12 16-13 39 1 32 15 22 1 27 23 11 32 17 17 4 34-15 30H32C10 96 3 68 22 57z',
+      pony:'M92 26c19-21 29-2 20 20-7 18-2 33 9 40-26 10-39-18-27-42M25 63C13 4 110 3 103 61L92 83H36z',
+      straight:'M24 51C20 2 108 1 104 55v66H20z',
+      swept:'M26 63C11 43 20 13 51 12c28-10 58 8 56 33L96 76 83 48 36 74z',
+      braids:'M27 62C15 6 110 3 102 64L90 83H38zM29 62c-15 10-9 20-5 23-11 9-6 18 2 20l-5 17 19-1 2-18c9-8 1-17-3-19 5-11-1-19-10-22M99 62c15 10 9 20 5 23 11 9 6 18-2 20l5 17-19-1-2-18c-9-8-1-17 3-19-5-11 1-19 10-22',
+      shag:'M26 51C19 9 99 0 106 43l-5 23 12 29-19-4 1 13-22-6-11 9-15-9-22 5 5-17-15 3 11-23z'
+    };
+    const fronts={
+      long:'M27 51C15 14 57 6 77 18c18 2 27 19 25 36-16-4-25-15-29-26-6 19-25 30-46 29z',
+      pixie:'M23 51C16 20 53 3 79 18l24 26-23-4-6-12c-8 21-29 30-51 23z',
+      buns:'M27 52C20 12 100 10 102 53-20-2-30-15-35-24-7 14-21 23-40 25z',
+      bob:'M26 46C29 9 99 10 103 47l-14 4-6-14-2 15H65l-4-14-3 14-17-1-2-12-3 12z',
+      curly:'M24 48C14 33 32 21 44 29c5-20 26-16 31-3 18-8 35 10 23 24-12 6-22-1-26-13-9 19-31 22-48 11z',
+      pony:'M26 50C15 16 77 2 98 34l5 17c-24-1-35-16-38-26-4 16-21 27-39 29z',
+      straight:'M26 50C18 9 99 4 103 49-21-1-29-20-32-27-10 17-24 27-45 32z',
+      swept:'M22 48C14 11 75-2 103 35l3 12-29-12c-12 20-35 24-55 13z',
+      braids:'M27 50C20 10 99 8 102 51-17 0-29-11-36-25-8 15-22 24-39 27z',
+      shag:'M23 47C16 12 75 2 99 28l8 20-20-7-5 14-15-23-8 22-11-12-16 16z'
+    };
+    const closed=['a5','a6','a9'].includes(p.id);
+    const eyes=closed
+      ? '<path d="M42 64q5-6 10 0M76 64q5-6 10 0" fill="none" stroke-width="2.3"/>'
+      : '<path d="M41 60q5-4 11 0M76 60q5-4 11 0" fill="none" stroke-width="1.6"/><ellipse cx="48" cy="65" rx="2.7" ry="4" fill="'+ink+'"/><ellipse cx="81" cy="65" rx="2.7" ry="4" fill="'+ink+'"/><path d="M48 64h.2M81 64h.2" stroke="#fff8ec" stroke-width="1.8"/>';
     let detail='';
-    if(p.accessory==='glasses')detail='<g fill="none" stroke="#6b626b" stroke-width="2"><circle cx="52" cy="62" r="10"/><circle cx="77" cy="62" r="10"/><path d="M62 61h5"/></g>';
-    if(p.accessory==='flower')detail='<g fill="#f0c6d7"><circle cx="91" cy="43" r="5"/><circle cx="96" cy="48" r="5"/><circle cx="91" cy="53" r="5"/><circle cx="86" cy="48" r="5"/></g><circle cx="91" cy="48" r="3" fill="#f4dfad"/>';
-    if(p.accessory==='moon')detail='<path d="M89 36c-7 1-6 12 1 12-3 4-11 1-10-5 0-4 4-8 9-7" fill="#e3d5a5"/>';
-    if(p.accessory==='freckles')detail='<g fill="#b88a74"><circle cx="44" cy="71" r="1"/><circle cx="49" cy="73" r="1"/><circle cx="80" cy="73" r="1"/><circle cx="85" cy="71" r="1"/></g>';
-    if(['bow','ribbon'].includes(p.accessory))detail='<path d="m89 26-12-6 1 13 11-4 11 5 1-14z" fill="#d9a8b5"/><circle cx="89" cy="28" r="3" fill="#f3d9df"/>';
-    if(p.accessory==='hoop')detail='<circle cx="91" cy="73" r="5" fill="none" stroke="#dfc29c" stroke-width="2"/>';
-    if(p.accessory==='stud')detail='<circle cx="91" cy="72" r="2.5" fill="#e1cfaf"/>';
-    if(p.accessory==='cherry')detail='<path d="m26 90 5-7 6 7" fill="none" stroke="#9cac8f"/><circle cx="25" cy="94" r="4" fill="#c98592"/><circle cx="38" cy="94" r="4" fill="#c98592"/>';
-    return `<svg viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="64" cy="64" r="63" fill="${p.bg}"/><g fill="${p.hair}">${back}</g><path d="M20 128c1-27 19-37 44-37s43 10 44 37" fill="${p.shirt}"/><path d="M55 84h18v15c-4 8-14 8-18 0" fill="#efc8b6"/><ellipse cx="35" cy="64" rx="6" ry="8" fill="#f4d3c3"/><ellipse cx="93" cy="64" rx="6" ry="8" fill="#f4d3c3"/><path d="M35 47c0-25 58-25 58 0v17c0 19-14 29-29 29S35 83 35 64z" fill="#f8ddcf"/><g fill="${p.hair}">${front}</g><g stroke="#66515b" stroke-width="2.3" stroke-linecap="round" fill="none"><path d="M48 61v3M78 61v3"/>${smile}</g><g fill="#e5a6ad" opacity=".55"><ellipse cx="45" cy="70" rx="5" ry="3"/><ellipse cx="82" cy="70" rx="5" ry="3"/></g>${detail}<path d="m52 101 12 7 12-7" fill="none" stroke="#fff9f3" stroke-width="2" opacity=".8"/></svg>`;
+    if(p.accessory==='glasses')detail='<g fill="none" stroke="'+ink+'" stroke-width="1.7"><circle cx="48" cy="65" r="11"/><circle cx="81" cy="65" r="11"/><path d="M59 64h11M30 62l7 1M92 63l7-1"/></g>';
+    if(['flower','cherry'].includes(p.accessory))detail='<g transform="translate('+(p.accessory==='flower'?'94 40':'33 92')+')"><g fill="#fff1da" stroke="#d0b396" stroke-width=".7"><ellipse cy="-5" rx="3.5" ry="5"/><ellipse cy="-5" rx="3.5" ry="5" transform="rotate(72)"/><ellipse cy="-5" rx="3.5" ry="5" transform="rotate(144)"/><ellipse cy="-5" rx="3.5" ry="5" transform="rotate(216)"/><ellipse cy="-5" rx="3.5" ry="5" transform="rotate(288)"/></g><circle r="2.5" fill="#d5ad6e"/></g>';
+    if(['bow','ribbon'].includes(p.accessory))detail='<path d="m94 28-14-8 2 13 12-2 12 6 1-15z" fill="#e2c9b3" stroke="#a78473" stroke-width="1"/><path d="m93 30-5 14m7-13 5 12" fill="none" stroke="#e2c9b3" stroke-width="3"/>';
+    if(p.accessory==='moon')detail='<path d="M28 31c-2-18 14-26 35-23 26-4 41 12 38 27-22-11-47-10-73-4z" fill="#bd9297" stroke="#a87d83" stroke-width="1.2"/>';
+    if(p.accessory==='freckles')detail='<path d="M38 74h.2m5 2h.2m43 0h.2m5-2h.2" stroke="#bd8f77" stroke-width="2"/>';
+    if(['stud','hoop'].includes(p.accessory))detail='<circle cx="99" cy="76" r="'+(p.accessory==='hoop'?'4':'2.2')+'" fill="'+(p.accessory==='hoop'?'none':'#ddbb82')+'" stroke="#ddbb82" stroke-width="1.5"/>';
+    return `<svg viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs><clipPath id="portrait-${p.id}"><circle cx="64" cy="64" r="63"/></clipPath></defs>
+      <g clip-path="url(#portrait-${p.id})">
+        <circle cx="64" cy="64" r="63" fill="${p.bg}"/>
+        <path d="${backs[p.style]}" fill="${hair}" stroke="${ink}" stroke-width="1.2" stroke-linejoin="round"/>
+        <path d="M15 130c2-28 20-32 49-32s47 4 49 32" fill="${p.shirt}" stroke="${ink}" stroke-width="1"/>
+        <path d="M54 88h20v17q-10 10-20 0z" fill="${skin}"/>
+        <ellipse cx="30" cy="67" rx="7" ry="9" fill="${skin}" stroke="#c59c87" stroke-width="1"/>
+        <ellipse cx="99" cy="67" rx="7" ry="9" fill="${skin}" stroke="#c59c87" stroke-width="1"/>
+        <path d="M29 45C27 23 100 21 100 46v19c0 21-17 33-35 33S29 86 29 65z" fill="${skin}" stroke="#b68d7b" stroke-width="1"/>
+        <path d="${fronts[p.style]}" fill="${hair}" stroke="${ink}" stroke-width="1.2" stroke-linejoin="round"/>
+        <path d="M39 35q7-12 21-14M84 34q8 7 10 17" fill="none" stroke="#f3dcc6" stroke-opacity=".25" stroke-width="1.6" stroke-linecap="round"/>
+        <g stroke="${ink}" stroke-linecap="round">${eyes}<path d="M61 82q4 3 8-1" fill="none" stroke-width="1.5"/><path d="m65 71-1 4h2" fill="none" stroke="#c89880" stroke-width="1"/></g>
+        <g fill="#db9d99" opacity=".48"><ellipse cx="40" cy="76" rx="7" ry="3.5"/><ellipse cx="88" cy="76" rx="7" ry="3.5"/></g>
+        <path d="m48 102 16 11 16-11-5 19-11-8-10 8z" fill="#fff3df" stroke="#d2b9a6" stroke-width=".8"/>
+        <path d="M64 114v14M29 115l-2 13M99 115l2 13" fill="none" stroke="${ink}" stroke-opacity=".3"/>
+        ${detail}
+      </g>
+    </svg>`;
   }
   root.HeartAvatars={portraits,svg};
 })(globalThis);
